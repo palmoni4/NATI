@@ -497,7 +497,7 @@ const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.curr
     createMessageHTML(message) {
         const isUser = message.role === 'user';
         const time = new Date(message.timestamp).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-const avatar = isUser ? '<span>אתה</span>' : '<img src="YRTNP1.jpg" alt="תיאור התמונה" width="40">';
+const avatar = isUser ? '<span>אתה</span>' : '<img src="YRTNP.jpg" alt="תיאור התמונה" width="40">';
         const senderName = isUser ? 'אתה' : 'נתי';
         let filesHtml = '';
         if (isUser && message.files && message.files.length) {
