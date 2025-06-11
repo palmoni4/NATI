@@ -4,14 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>שוחח עם נתי</title>
-    <link rel="stylesheet" href="gemini-style.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/jpeg" href="LOGO.jpeg">    
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="YRTNP.jpg">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-
+    <link rel="icon" type="image/jpeg" href="YRTNP.jpg">
 </head>
 <body>
+
+    <!-- After the sidebar div and before main-content div -->
+    <div class="history-sidebar" id="historySidebar">
+        <div class="sidebar-header">
+            <button class="sidebar-toggle" id="historyToggle" title="סגור/פתח היסטוריה">
+                <!-- span class="material-icons">history</span -->
+            </button>
+            <div class="logo">
+                <span class="material-icons">history</span>
+                <span class="logo-text">היסטוריית צ'אט</span>
+                </div>
+        </div>
+                <div class="search-wrapper" style="position: relative;">
+                    <input type="text" id="historySearch" placeholder="חפש בהיסטוריה...">
+                    <button id="clearSearch" title="נקה">×</button>
+                </div>
+
+        <div class="chat-history" id="chatHistory">
+            <div class="history-header">
+                <h3></h3>
+                <button class="clear-history-btn" id="clearHistoryBtn" title="נקה היסטוריה">
+                    <span class="material-icons">delete_sweep</span>
+                </button>
+            </div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -29,7 +57,7 @@
         </div>
         <div class="api-settings">
             <div class="api-section">
-                <h3>הגדרות</h3>
+                <h3>הגדרות Gemini</h3>
                 <div class="api-input-group">
                     <label>Gemini API Key:</label>
                     <input type="password" id="geminiApiKey" placeholder="הזן API Key של Gemini">
@@ -38,6 +66,7 @@
                 <div class="model-selector">
                     <label>בחר מודל Gemini:</label>
                     <select id="geminiModel">
+                        <option value="gemini-2.5-flash-preview-05-20">Gemini Flash 2.5 (Preview)</option>
                         <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash Experimental</option>
                         <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
                         <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B</option>
@@ -49,12 +78,40 @@
                     <details>
                         <summary>הגדרות מתקדמות</summary>
                         <div class="setting-group">
-                            <label>Temperature: <span id="tempValue">0.7</span></label>
+                            <label>טֶמְפֵּרָטוּרָה: <span id="tempValue">0.7</span></label>
                             <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
                         </div>
-                        <div class="setting-group">
-                            <label>Max Tokens: <span id="maxTokensValue">2048</span></label>
+                        <div class="setting-group" id="maxTokensRow">
+                            <label>מקסימום אסימונים: <span id="maxTokensValue">2048</span></label>
                             <input type="range" id="maxTokens" min="256" max="8192" step="256" value="2048">
+                        </div>
+                        <div class="setting-group small-toggle">
+                            <label class="checkbox-label small-label">
+                                <input type="checkbox" id="toggleTokenLimit" />
+                                השבת הגבלת אסימונים
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label>Top P: <span id="topPValue">0.95</span></label>
+                            <input type="range" id="topP" min="0" max="1" step="0.05" value="0.95">
+                        </div>
+                        <div class="setting-group">
+                            <label>Top K: <span id="topKValue">40</span></label>
+                            <input type="range" id="topK" min="1" max="100" step="1" value="40">
+                        </div>
+                        <div class="setting-group checkboxes">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="streamResponse" checked>
+                                הצג תשובה בזמן אמת
+                            </label>
+                            <label class="checkbox-label" title="השבתת האפשרות תגרום לצ'אט לא לקשר בין ההודעה הנוכחית לכל השיחה.">
+                                <input type="checkbox" id="includeChatHistory" checked>
+                                כלול היסטוריית שיחה
+                            </label>
+                            <label class="checkbox-label" title="כאשר האפשרות פעילה, לא יופיע החלון בעת טעינת התשובה ותוכלו להמשיך לרפרף בשיחה.">
+                                    <input type="checkbox" id="hideLoadingOverlay" >
+                                    הסתר חלון טעינת תשובה
+                                </label>
                         </div>
                     </details>
                 </div>
@@ -62,9 +119,7 @@
         </div>
         <div class="chat-history" id="chatHistory">
             <div class="history-header">
-                <h3>היסטוריית צ'אט</h3>
-                <button class="clear-history-btn" id="clearHistoryBtn" title="נקה היסטוריה">
-                    <span class="material-icons">delete_sweep</span>
+
                 </button>
             </div>
             <div class="history-list" id="historyList"></div>
@@ -73,6 +128,10 @@
             <div class="theme-toggle" id="themeToggle">
                 <span class="material-icons">dark_mode</span>
                 <span>מצב כהה</span>
+            </div>
+            <div class="luxury-toggle" id="luxuryToggle">
+                <span class="material-icons">stars</span>
+                <span>מצב יוקרתי</span>
             </div>
             <div class="export-btn" id="exportBtn">
                 <span class="material-icons">download</span>
@@ -85,10 +144,11 @@
         <div class="top-bar">
             <div class="chat-title" id="chatTitle">צ'אט חדש</div>
             <div class="top-actions">
-                <button class="action-btn" id="shareBtn" title="שתף צ'אט">
-                    <span class="material-icons">share</span>
+                <button class="edit-chat-title-btn" id="editChatTitleBtn" title="ערוך שם צ'אט">✎</button>
+                <button class="action-btn" id="shareBtn" title="העתק צ'אט">
+                    <span class="material-icons">content_copy</span>
                 </button>
-                <button class="action-btn" id="regenerateBtn" title="צור מחדש תשובה">
+                <button class="action-btn" id="regenerateBtn" title="צור תשובה מחדש">
                     <span class="material-icons">refresh</span>
                 </button>
             </div>
@@ -105,9 +165,9 @@
                     <h1>אני נתי, ואין בלתי</h1>
                     <p>באת עוד פעם לטרטר אותי?</p>
                     <div class="suggestion-cards">
-                        <div class="suggestion-card" data-prompt="כתב לי מאמר מקיף על השפעת הבינה המלאכותית על העתיד">
+                        <div class="suggestion-card" data-prompt="כתוב לי מאמר מקיף על השפעת הבינה המלאכותית על העתיד">
                             <div class="card-icon"><span class="material-icons">article</span></div>
-                            <div class="card-content"><h4>כתיבה יצירתית</h4><p>כתב מאמר על בינה מלאכותית</p></div>
+                            <div class="card-content"><h4>כתיבה יצירתית</h4><p>כתוב מאמר על בינה מלאכותית</p></div>
                         </div>
                         <div class="suggestion-card" data-prompt="עזור לי לתכנן פרויקט טכנולוגי מתקדם עם לוח זמנים מפורט">
                             <div class="card-icon"><span class="material-icons">lightbulb</span></div>
@@ -117,9 +177,9 @@
                             <div class="card-icon"><span class="material-icons">school</span></div>
                             <div class="card-content"><h4>הסברים מדעיים</h4><p>הסבר מושגים מורכבים</p></div>
                         </div>
-                        <div class="suggestion-card" data-prompt="כתב לי קוד Python מתקדם לניתוח נתונים עם הסברים מפורטים">
+                        <div class="suggestion-card" data-prompt="כתוב לי קוד Python מתקדם לניתוח נתונים עם הסברים מפורטים">
                             <div class="card-icon"><span class="material-icons">code</span></div>
-                            <div class="card-content"><h4>תכנות</h4><p>כתב קוד לפתרון בעיות</p></div>
+                            <div class="card-content"><h4>תכנות</h4><p>כתוב קוד לפתרון בעיות</p></div>
                         </div>
                         <div class="suggestion-card" data-prompt="תן לי רעיונות לבישול ארוחה בריאה ומזינה לשבוע שלם">
                             <div class="card-icon"><span class="material-icons">restaurant</span></div>
@@ -155,15 +215,9 @@
                         <span class="material-icons">attach_file</span>
                     </button>
                     <button class="action-btn" id="micBtn" title="הקלטה קולית">
-                        <span class="material-icons">mic</span>
-                    </button>
+
                 </div>
-                <textarea 
-                    id="messageInput" 
-                    placeholder="הזן הודעה... (Ctrl+Enter לשליחה מהירה)" 
-                    rows="1"
-                    maxlength="8000">
-                </textarea>
+                <textarea id="messageInput" placeholder="הזן הודעה... (Enter לשליחה מהירה)" rows="1"></textarea>
                 <button class="send-btn" id="sendBtn" disabled>
                     <span class="material-icons">send</span>
                 </button>
@@ -173,7 +227,7 @@
                 <div class="file-preview-list" id="filePreviewList"></div>
             </div>
             <div class="input-footer">
-                <span class="char-count" id="charCount">0/8000</span>
+                <span class="char-count" id="charCount">0</span>
                 <span class="model-info" id="modelInfo">Gemini 2.0 Flash Experimental</span>
                 <span class="powered-by">מופעל על ידי Google Gemini</span>
             </div>
@@ -182,7 +236,10 @@
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
-            <div class="loading-spinner"></div>
+            <div class="loading-spinner-container">
+                <div class="loading-spinner"></div>
+                <div class="loading-progress" id="loadingProgress">0%</div>
+            </div>
             <div class="loading-text">
                 <span class="loading-message" id="loadingMessage">מעבד הודעה...</span>
                 <div class="loading-steps">
@@ -209,15 +266,55 @@
             <span class="material-icons">delete</span>
             מחק
         </div>
-        <div class="context-item" data-action="share">
-            <span class="material-icons">share</span>
-            שתף
+
+    </div>
+    <!-- Export Dialog -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ייצא צ'אט</h2>
+                <button class="close-modal" id="closeExportModal">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <div class="export-option" data-format="docx">
+                        <span class="material-icons">description</span>
+                        <span>Word</span>
+                    </div>
+                    <div class="export-option" data-format="pdf">
+                        <span class="material-icons">picture_as_pdf</span>
+                        <span>PDF</span>
+                    </div>
+                    <div class="export-option" data-format="txt">
+                        <span class="material-icons">text_snippet</span>
+                        <span>טקסט</span>
+                    </div>
+                </div>
+                <div class="export-settings">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="includeTimestamps" checked>
+                        כלול תאריכים ושעות
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="includeSystemPrompts">
+                        כלול הנחיות מערכת
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" id="cancelExport">ביטול</button>
+                <button class="confirm-btn" id="confirmExport">ייצא</button>
+            </div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
-    <script src="gemini-script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
